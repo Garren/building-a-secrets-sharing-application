@@ -37,7 +37,6 @@ type (
 )
 
 func init() {
-	fmt.Fprintln(os.Stdout, "init")
 	path := os.Getenv("DATA_FILE_PATH")
 	if path == "" {
 		err := errors.New("DATA_FILE_PATH variable does not exist")
@@ -45,11 +44,9 @@ func init() {
 	}
 
 	if _, err := os.Stat(path); err == nil {
-		fmt.Fprintf(os.Stdout, "file %s exists", path)
 		return
 	} else if os.IsNotExist(err) {
 		file, err := os.Create(path)
-		fmt.Fprintf(os.Stdout, "file %s created", path)
 		if err != nil {
 			panic(err)
 		}
@@ -67,9 +64,24 @@ func NewStore() Store {
 	}
 }
 
+func (s *Store) load() (err error) {
+
+	jsonFile, err := os.Open(s.path)
+	if err != nil {
+		fmt.Println("Error opening JSON file", err)
+		return err
+	}
+	defer jsonFile.Close()
+
+	if jsonData, err := ioutil.ReadAll(jsonFile); err == nil {
+		err = json.Unmarshal(jsonData, &s.data)
+	}
+
+	return
+}
+
 func (s *Store) write() (err error) {
 
-	// write the map the the file
 	jsonFile, err := os.Open(s.path)
 	if err != nil {
 		fmt.Println("Error opening JSON file", err)
@@ -120,7 +132,9 @@ func (c *Controller) handleGetSecret(w http.ResponseWriter, r *http.Request) (er
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
 
-	if val, ok, err := c.store.remove(key); ok && err == nil {
+	if err = c.store.load(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	} else if val, ok, err := c.store.remove(key); ok && err == nil {
 		response.Data = val
 	} else {
 		err = errors.New("key not found")
