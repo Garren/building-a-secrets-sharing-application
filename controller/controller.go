@@ -17,7 +17,6 @@ type Controller struct {
 }
 
 func (c *Controller) handleGetSecret(w http.ResponseWriter, r *http.Request) (err error) {
-
 	response := types.SecretGetResponse{ Data: "" }
 
 	key := path.Base(r.URL.Path)
@@ -87,7 +86,6 @@ func (c *Controller) SecretHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// controller factory function
 func NewController(s store.Store) Controller {
 	return Controller{ store: s }
 }

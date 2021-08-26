@@ -44,7 +44,6 @@ func NewStore() Store {
 }
 
 func (s *Store) Load() (err error) {
-
 	jsonFile, err := os.Open(s.path)
 	if err != nil {
 		fmt.Println("Error opening JSON file", err)
@@ -55,12 +54,10 @@ func (s *Store) Load() (err error) {
 	if jsonData, err := ioutil.ReadAll(jsonFile); err == nil {
 		err = json.Unmarshal(jsonData, &s.data)
 	}
-
 	return
 }
 
 func (s *Store) write() (err error) {
-
 	jsonFile, err := os.Open(s.path)
 	if err != nil {
 		fmt.Println("Error opening JSON file", err)
@@ -70,7 +67,6 @@ func (s *Store) write() (err error) {
 
 	result, err := json.Marshal(s.data)
 	err = ioutil.WriteFile(s.path, result, 0644)
-
 	return
 }
 
