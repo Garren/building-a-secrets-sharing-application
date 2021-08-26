@@ -8,7 +8,6 @@ import (
 	"git.sr.ht/~garren/milestone1-code/store"
 )
 
-
 func main() {
 	server := http.Server{
 		Addr: "0.0.0.0:8080",
