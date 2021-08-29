@@ -2,97 +2,101 @@ package store
 
 import (
 	"encoding/json"
-	"errors"
-	"fmt"
-	"io/ioutil"
+	"io"
+	"log"
 	"os"
 	"sync"
+
+	"git.sr.ht/~garren/milestone1-code/types"
 )
 
-type Store struct {
-	path  string
-	mutex *sync.Mutex
-	data  map[string]string
+type fileStore struct {
+	Store map[string]string
+	mutex sync.Mutex
 }
 
-func init() {
-	path := os.Getenv("DATA_FILE_PATH")
-	if path == "" {
-		err := errors.New("DATA_FILE_PATH variable does not exist")
-		panic(err)
-	}
+var FileStoreConfig struct {
+	DataFilePath string
+	Fs fileStore
+}
 
-	if _, err := os.Stat(path); err == nil {
-		return
-	} else if os.IsNotExist(err) {
-		file, err := os.Create(path)
+func Init(dataFilePath string) error {
+	_, err := os.Stat(dataFilePath)
+
+	if err != nil {
+		_, err := os.Create(dataFilePath)
 		if err != nil {
-			panic(err)
+			return err
 		}
-		defer file.Close()
-	} else {
-		panic(err)
 	}
+
+	FileStoreConfig.Fs = fileStore{
+		mutex: sync.Mutex{},
+		Store: make(map[string]string),
+	}
+	FileStoreConfig.DataFilePath = dataFilePath
+
+	return nil
 }
 
-func NewStore() Store {
-	return Store{
-		path:  os.Getenv("DATA_FILE_PATH"),
-		mutex: &sync.Mutex{},
-		data:  make(map[string]string),
-	}
-}
-
-func (s *Store) Load() (err error) {
-	jsonFile, err := os.Open(s.path)
+func (j *fileStore) ReadFromFile() error {
+	f, err := os.Open(FileStoreConfig.DataFilePath)
 	if err != nil {
-		fmt.Println("Error opening JSON file", err)
 		return err
 	}
-	defer jsonFile.Close()
-
-	if jsonData, err := ioutil.ReadAll(jsonFile); err == nil {
-		err = json.Unmarshal(jsonData, &s.data)
+	jsonData, err := io.ReadAll(f)
+	if err != nil {
+		log.Fatal(err)
 	}
-	return
+	if len(jsonData) != 0 {
+		return json.Unmarshal(jsonData, &j.Store)
+	}
+	return nil
 }
 
-func (s *Store) write() (err error) {
-	jsonFile, err := os.Open(s.path)
+func (j *fileStore) WriteToFile() error {
+	var f *os.File
+	jsonData, err := json.Marshal(j.Store)
 	if err != nil {
-		fmt.Println("Error opening JSON file", err)
 		return err
 	}
-	defer jsonFile.Close()
-
-	result, err := json.Marshal(s.data)
-	err = ioutil.WriteFile(s.path, result, 0644)
-	return
-}
-
-func (s *Store) DeleteAndWrite(key string) (err error) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
-	delete(s.data, key)
-	err = s.write()
-
-	return
-}
-
-func (s *Store) StoreAndWrite(key, value string) (err error) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
-	s.data[key] = value
-	err = s.write()
-
-	return
-}
-
-func (s *Store) Remove(key string) (val string, ok bool, err error) {
-	if val, ok = s.data[key]; ok {
-		err = s.DeleteAndWrite(key)
+	f, err = os.Open(FileStoreConfig.DataFilePath)
+	if err != nil {
+		return err
 	}
-	return val, ok, err
+	jsonData, err = io.ReadAll(f)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if len(jsonData) != 0 {
+		return json.Unmarshal(jsonData, &j.Store)
+	}
+	return nil
 }
+
+func (j *fileStore) Write(data types.SecretData) error {
+	j.mutex.Lock()
+	defer j.mutex.Unlock()
+
+	err := j.ReadFromFile()
+	if err != nil {
+		return err
+	}
+	j.Store[data.Id] = data.Secret
+	return j.WriteToFile()
+}
+
+func (j *fileStore) Read(id string) (string, error) {
+	j.mutex.Lock()
+	defer j.mutex.Unlock()
+
+	err := j.ReadFromFile()
+	if err != nil {
+		return "", err
+	}
+	data := j.Store[id]
+	delete(j.Store, id)
+	j.WriteToFile()
+	return data, nil
+}
+

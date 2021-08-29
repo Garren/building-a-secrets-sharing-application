@@ -1,14 +1,18 @@
 package types
 
-type SecretPost struct {
+type CreateSecretPayload struct {
 	PlainText string `json:"plain_text"`
 }
 
-type SecretGetResponse struct {
+type GetSecretResponse struct {
 	Data string `json:"data"`
 }
 
-type SecretPostResponse struct {
+type CreateSecretResponse struct {
 	Id string `json:"id"`
 }
 
+type SecretData struct {
+	Id string
+	Secret string
+}

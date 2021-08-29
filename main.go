@@ -1,20 +1,32 @@
 package main
 
 import (
+	"log"
 	"net/http"
+	"os"
 
-	"git.sr.ht/~garren/milestone1-code/controller"
-	"git.sr.ht/~garren/milestone1-code/handler"
+	"git.sr.ht/~garren/milestone1-code/handlers"
 	"git.sr.ht/~garren/milestone1-code/store"
 )
 
 func main() {
-	server := http.Server{
-		Addr: "0.0.0.0:8080",
+	listenAddr := ":8080"
+	if fromEnv := os.Getenv("LISTEN_ADDR"); fromEnv != "" {
+		listenAddr = fromEnv
 	}
-	s := store.NewStore()
-	c := controller.NewController(s)
-	http.HandleFunc("/healthcheck", handler.HealthCheckHandler)
-	http.HandleFunc("/", c.SecretHandler)
-	server.ListenAndServe()
+
+	mux := http.NewServeMux()
+	handlers.SetupHandlers(mux)
+
+	dataFilePath := os.Getenv("DATA_FILE_PATH")
+	if len(dataFilePath) == 0 {
+		log.Fatal("Specify DATA_FILE_PATH")
+	}
+
+	store.Init(dataFilePath)
+
+	err := http.ListenAndServe(listenAddr, mux)
+	if err != nil {
+		log.Fatalf("server could not start listening on %s. error %v", listenAddr, err)
+	}
 }
