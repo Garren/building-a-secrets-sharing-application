@@ -9,8 +9,8 @@ import (
 	"path"
 	"strings"
 
-	"git.sr.ht/~garren/milestone1-code/store"
-	"git.sr.ht/~garren/milestone1-code/types"
+	"github.com/Garren/building-a-secrets-sharing-application/store"
+	"github.com/Garren/building-a-secrets-sharing-application/types"
 )
 
 func getSecret(w http.ResponseWriter, r *http.Request) {
@@ -58,7 +58,7 @@ func createSecret(w http.ResponseWriter, r *http.Request) {
 	digest := getHash(p.PlainText)
 	response := types.CreateSecretResponse{Id: digest}
 
-	s := types.SecretData{ Id: digest }
+	s := types.SecretData{Id: digest}
 	err = store.FileStoreConfig.Fs.Write(s)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

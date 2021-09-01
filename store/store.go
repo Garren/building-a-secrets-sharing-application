@@ -7,7 +7,7 @@ import (
 	"os"
 	"sync"
 
-	"git.sr.ht/~garren/milestone1-code/types"
+	"github.com/Garren/building-a-secrets-sharing-application/types"
 )
 
 type fileStore struct {
@@ -17,7 +17,7 @@ type fileStore struct {
 
 var FileStoreConfig struct {
 	DataFilePath string
-	Fs fileStore
+	Fs           fileStore
 }
 
 func Init(dataFilePath string) error {
@@ -99,4 +99,3 @@ func (j *fileStore) Read(id string) (string, error) {
 	j.WriteToFile()
 	return data, nil
 }
-

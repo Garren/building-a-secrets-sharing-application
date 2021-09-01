@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"os"
 
-	"git.sr.ht/~garren/milestone1-code/handlers"
-	"git.sr.ht/~garren/milestone1-code/store"
+	"github.com/Garren/building-a-secrets-sharing-application/handlers"
+	"github.com/Garren/building-a-secrets-sharing-application/store"
 )
 
 func main() {
