@@ -6,9 +6,15 @@ import (
 	"testing"
 )
 
-func TestGetHealthCheck(t *testing.T) {
+var mux *http.ServeMux
+var writer *httptest.ResponseRecorder
+
+func TestMain(m *testing.M) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/healthcheck", healthCheckHandler)
+}
+
+func TestGetHealthCheck(t *testing.T) {
 	writer := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/healthcheck", nil)
 	mux.ServeHTTP(writer, request)
@@ -22,8 +28,6 @@ func TestGetHealthCheck(t *testing.T) {
 }
 
 func TestPostHealthCheck(t *testing.T) {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/healthcheck", healthCheckHandler)
 	writer := httptest.NewRecorder()
 	request, _ := http.NewRequest("POST", "/healthcheck", nil)
 	mux.ServeHTTP(writer, request)
