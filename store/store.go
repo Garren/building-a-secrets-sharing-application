@@ -3,6 +3,7 @@ package store
 import (
 	"encoding/json"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"sync"
@@ -55,16 +56,11 @@ func (j *fileStore) ReadFromFile() error {
 }
 
 func (j *fileStore) WriteToFile() error {
-	var f *os.File
 	jsonData, err := json.Marshal(j.Store)
 	if err != nil {
 		return err
 	}
-	f, err = os.Open(FileStoreConfig.DataFilePath)
-	if err != nil {
-		return err
-	}
-	jsonData, err = io.ReadAll(f)
+	ioutil.WriteFile(FileStoreConfig.DataFilePath, jsonData, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
