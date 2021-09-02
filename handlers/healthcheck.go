@@ -6,7 +6,12 @@ import (
 )
 
 func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	w.Header().Add("Content-Type", "text/plain")
-	io.WriteString(w, "ok")
+	switch r.Method {
+	case "GET":
+		w.WriteHeader(http.StatusOK)
+		w.Header().Add("Content-Type", "text/plain")
+		io.WriteString(w, "ok")
+	default:
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+	}
 }
