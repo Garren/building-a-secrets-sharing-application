@@ -17,7 +17,7 @@ func getSecret(w http.ResponseWriter, r *http.Request) {
 	id := path.Base(r.URL.Path)
 	id = strings.TrimPrefix(id, "/")
 	if len(id) == 0 {
-		http.Error(w, "no secret id supplied", http.StatusBadRequest)
+		http.Error(w, `{"data":""}`, http.StatusNotFound)
 		return
 	}
 	resp := types.GetSecretResponse{}
@@ -52,7 +52,7 @@ func createSecret(w http.ResponseWriter, r *http.Request) {
 	p := types.CreateSecretPayload{}
 	err = json.Unmarshal(bytes, &p)
 	if err != nil || len(p.PlainText) == 0 {
-		http.Error(w, "invalid request", http.StatusInternalServerError)
+		http.Error(w, "", http.StatusBadRequest)
 		return
 	}
 	digest := getHash(p.PlainText)
