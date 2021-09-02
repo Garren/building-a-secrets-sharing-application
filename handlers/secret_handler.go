@@ -58,7 +58,7 @@ func createSecret(w http.ResponseWriter, r *http.Request) {
 	digest := getHash(p.PlainText)
 	response := types.CreateSecretResponse{Id: digest}
 
-	s := types.SecretData{Id: digest}
+	s := types.SecretData{Id: digest, Secret: p.PlainText}
 	err = store.FileStoreConfig.Fs.Write(s)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -76,9 +76,9 @@ func createSecret(w http.ResponseWriter, r *http.Request) {
 func secretHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		createSecret(w, r)
-	case "POST":
 		getSecret(w, r)
+	case "POST":
+		createSecret(w, r)
 	default:
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 	}
