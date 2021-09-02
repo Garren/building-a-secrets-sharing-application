@@ -2,7 +2,6 @@ package store
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -26,7 +25,6 @@ func Init(dataFilePath string) error {
 	_, err := os.Stat(dataFilePath)
 
 	if err != nil {
-		fmt.Printf("file at '%s' not found. creating...", dataFilePath)
 		_, err := os.Create(dataFilePath)
 		if err != nil {
 			return err
