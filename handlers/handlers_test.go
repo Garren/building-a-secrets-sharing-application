@@ -36,14 +36,14 @@ func TestPostSecret(t *testing.T) {
 
 func TestBadVerbSecretHandler(t *testing.T) {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/healthcheck", healthCheckHandler)
-	mux.HandleFunc("/", secretHandler)
+	SetupHandlers(mux)
 	{
 		writer := httptest.NewRecorder()
 		request, _ := http.NewRequest("POST", "/", bytes.NewReader(nil))
 		mux.ServeHTTP(writer, request)
 		if writer.Code != http.StatusBadRequest {
-			t.Errorf("Response code is %v", writer.Code)
+			t.Errorf("Response code is %v, expecting %v",
+				writer.Code, http.StatusBadRequest)
 		}
 	}
 	{
@@ -51,7 +51,8 @@ func TestBadVerbSecretHandler(t *testing.T) {
 		request, _ := http.NewRequest("PUT", "/", bytes.NewReader(nil))
 		mux.ServeHTTP(writer, request)
 		if writer.Code != http.StatusMethodNotAllowed {
-			t.Errorf("Response code is %v", writer.Code)
+			t.Errorf("Response code is %v, expecting %v",
+				writer.Code, http.StatusMethodNotAllowed)
 		}
 	}
 	{
@@ -59,15 +60,15 @@ func TestBadVerbSecretHandler(t *testing.T) {
 		request, _ := http.NewRequest("DELETE", "/", nil)
 		mux.ServeHTTP(writer, request)
 		if writer.Code != http.StatusMethodNotAllowed {
-			t.Errorf("Response code is %v", writer.Code)
+			t.Errorf("Response code is %v, expecting %v",
+				writer.Code, http.StatusMethodNotAllowed)
 		}
 	}
 }
 
 func TestGetHealthCheck(t *testing.T) {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/healthcheck", healthCheckHandler)
-	mux.HandleFunc("/", secretHandler)
+	SetupHandlers(mux)
 	writer := httptest.NewRecorder()
 	request, _ := http.NewRequest("GET", "/healthcheck", nil)
 	mux.ServeHTTP(writer, request)
@@ -80,38 +81,31 @@ func TestGetHealthCheck(t *testing.T) {
 	}
 }
 
-func TestPostHealthCheck(t *testing.T) {
+func TestBadVerbHealthCheck(t *testing.T) {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/healthcheck", healthCheckHandler)
-	mux.HandleFunc("/", secretHandler)
-	writer := httptest.NewRecorder()
-	request, _ := http.NewRequest("POST", "/healthcheck", nil)
-	mux.ServeHTTP(writer, request)
-	if writer.Code != http.StatusMethodNotAllowed {
-		t.Errorf("Response code is %v", writer.Code)
+	SetupHandlers(mux)
+	{
+		writer := httptest.NewRecorder()
+		request, _ := http.NewRequest("POST", "/healthcheck", nil)
+		mux.ServeHTTP(writer, request)
+		if writer.Code != http.StatusMethodNotAllowed {
+			t.Errorf("Response code is %v", writer.Code)
+		}
 	}
-}
-
-func TestPutHealthCheck(t *testing.T) {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/healthcheck", healthCheckHandler)
-	mux.HandleFunc("/", secretHandler)
-	writer := httptest.NewRecorder()
-	request, _ := http.NewRequest("PUT", "/healthcheck", nil)
-	mux.ServeHTTP(writer, request)
-	if writer.Code != http.StatusMethodNotAllowed {
-		t.Errorf("Response code is %v", writer.Code)
+	{
+		writer := httptest.NewRecorder()
+		request, _ := http.NewRequest("PUT", "/healthcheck", nil)
+		mux.ServeHTTP(writer, request)
+		if writer.Code != http.StatusMethodNotAllowed {
+			t.Errorf("Response code is %v", writer.Code)
+		}
 	}
-}
-
-func TestDeleteHealthCheck(t *testing.T) {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/healthcheck", healthCheckHandler)
-	mux.HandleFunc("/", secretHandler)
-	writer := httptest.NewRecorder()
-	request, _ := http.NewRequest("DELETE", "/healthcheck", nil)
-	mux.ServeHTTP(writer, request)
-	if writer.Code != http.StatusMethodNotAllowed {
-		t.Errorf("Response code is %v", writer.Code)
+	{
+		writer := httptest.NewRecorder()
+		request, _ := http.NewRequest("DELETE", "/healthcheck", nil)
+		mux.ServeHTTP(writer, request)
+		if writer.Code != http.StatusMethodNotAllowed {
+			t.Errorf("Response code is %v", writer.Code)
+		}
 	}
 }

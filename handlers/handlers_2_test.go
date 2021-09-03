@@ -20,12 +20,13 @@ func TestGetSecretSuccess(t *testing.T) {
 	SetupHandlers(mux)
 
 	{
+		writer := httptest.NewRecorder()
+
 		payload, _ := json.Marshal(types.CreateSecretPayload{
 			PlainText: myTestSecret,
 		})
 		p := bytes.NewReader(payload)
 
-		writer := httptest.NewRecorder()
 		request, err := http.NewRequest("POST", "/", p)
 		if err != nil {
 			t.Errorf("posting request %e", err)
@@ -45,6 +46,7 @@ func TestGetSecretSuccess(t *testing.T) {
 
 	{
 		writer := httptest.NewRecorder()
+
 		request, _ := http.NewRequest("GET", "/"+id, nil)
 		mux.ServeHTTP(writer, request)
 		if writer.Code != http.StatusOK {
@@ -61,10 +63,9 @@ func TestGetSecretSuccess(t *testing.T) {
 }
 
 func TestGetSecretFail(t *testing.T) {
+	mux := http.NewServeMux()
+	SetupHandlers(mux)
 	{
-		mux := http.NewServeMux()
-		mux.HandleFunc("/healthcheck", healthCheckHandler)
-		mux.HandleFunc("/", secretHandler)
 		writer := httptest.NewRecorder()
 		request, _ := http.NewRequest("POST", "/", bytes.NewReader(nil))
 		mux.ServeHTTP(writer, request)
@@ -73,15 +74,13 @@ func TestGetSecretFail(t *testing.T) {
 		}
 	}
 	{
+		writer := httptest.NewRecorder()
+
 		payload, _ := json.Marshal(types.GetSecretResponse{
 			Data: "data",
 		})
 		p := bytes.NewReader(payload)
 
-		mux := http.NewServeMux()
-		mux.HandleFunc("/healthcheck", healthCheckHandler)
-		mux.HandleFunc("/", secretHandler)
-		writer := httptest.NewRecorder()
 		request, _ := http.NewRequest("POST", "/", p)
 		mux.ServeHTTP(writer, request)
 		if writer.Code != http.StatusBadRequest {
