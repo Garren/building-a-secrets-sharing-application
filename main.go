@@ -23,7 +23,17 @@ func main() {
 		log.Fatal("Specify DATA_FILE_PATH")
 	}
 
-	store.Init(dataFilePath)
+	password := os.Getenv("PASSWORD")
+	if len(password) == 0 {
+		log.Fatal("Specify PASSWORD")
+	}
+
+	salt := os.Getenv("SALT")
+	if len(salt) == 0 {
+		log.Fatal("Specify SALT")
+	}
+
+	store.Init(dataFilePath, password, salt)
 
 	err := http.ListenAndServe(listenAddr, mux)
 	if err != nil {
