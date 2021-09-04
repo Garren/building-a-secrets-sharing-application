@@ -2,110 +2,73 @@ package handlers
 
 import (
 	"bytes"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 )
 
-func TestGetSecret(t *testing.T) {
+func TestVerbSecretHandler(t *testing.T) {
+	verbtests := []struct {
+		verb string
+		code int
+		body string
+	}{
+		{"GET", http.StatusNotFound, `{"data":""}`},
+		{"POST", http.StatusBadRequest, ""},
+		{"PUT", http.StatusMethodNotAllowed, "method not allowed"},
+		{"DELETE", http.StatusMethodNotAllowed, "method not allowed"},
+	}
+
 	mux := http.NewServeMux()
 	SetupHandlers(mux)
-	writer := httptest.NewRecorder()
-	request, _ := http.NewRequest("GET", "/", nil)
-	mux.ServeHTTP(writer, request)
-	if writer.Code != http.StatusNotFound {
-		t.Errorf("Response code is %v", writer.Code)
-	}
-	body := writer.Body.Bytes()
-	if strings.TrimRight(string(body), "\n") != `{"data":""}` {
-		t.Errorf("Response body not ok '%s'", string(body))
+
+	for _, tt := range verbtests {
+		t.Run(tt.verb, func(t *testing.T) {
+			writer := httptest.NewRecorder()
+			request, _ := http.NewRequest(tt.verb, "/", bytes.NewReader(nil))
+			mux.ServeHTTP(writer, request)
+			if writer.Code != tt.code {
+				t.Errorf("Response code is %v, expecting %v",
+					writer.Code, http.StatusBadRequest)
+			}
+			body, _ := io.ReadAll(writer.Body)
+			if strings.TrimRight(string(body), "\n") != tt.body {
+				t.Errorf("Response body not ok '%s'", string(body))
+			}
+		})
 	}
 }
 
-func TestPostSecret(t *testing.T) {
-	mux := http.NewServeMux()
-	SetupHandlers(mux)
-	writer := httptest.NewRecorder()
-	request, _ := http.NewRequest("POST", "/", bytes.NewReader(nil))
-	mux.ServeHTTP(writer, request)
-	if writer.Code != http.StatusBadRequest {
-		t.Errorf("Response code is %v", writer.Code)
+func TestVerbHealthCheck(t *testing.T) {
+	verbtests := []struct {
+		verb string
+		code int
+		body string
+	}{
+		{"GET", http.StatusOK, `ok`},
+		{"POST", http.StatusMethodNotAllowed, "method not allowed"},
+		{"PUT", http.StatusMethodNotAllowed, "method not allowed"},
+		{"DELETE", http.StatusMethodNotAllowed, "method not allowed"},
 	}
-}
 
-func TestBadVerbSecretHandler(t *testing.T) {
 	mux := http.NewServeMux()
 	SetupHandlers(mux)
-	{
-		writer := httptest.NewRecorder()
-		request, _ := http.NewRequest("POST", "/", bytes.NewReader(nil))
-		mux.ServeHTTP(writer, request)
-		if writer.Code != http.StatusBadRequest {
-			t.Errorf("Response code is %v, expecting %v",
-				writer.Code, http.StatusBadRequest)
-		}
-	}
-	{
-		writer := httptest.NewRecorder()
-		request, _ := http.NewRequest("PUT", "/", bytes.NewReader(nil))
-		mux.ServeHTTP(writer, request)
-		if writer.Code != http.StatusMethodNotAllowed {
-			t.Errorf("Response code is %v, expecting %v",
-				writer.Code, http.StatusMethodNotAllowed)
-		}
-	}
-	{
-		writer := httptest.NewRecorder()
-		request, _ := http.NewRequest("DELETE", "/", nil)
-		mux.ServeHTTP(writer, request)
-		if writer.Code != http.StatusMethodNotAllowed {
-			t.Errorf("Response code is %v, expecting %v",
-				writer.Code, http.StatusMethodNotAllowed)
-		}
-	}
-}
 
-func TestGetHealthCheck(t *testing.T) {
-	mux := http.NewServeMux()
-	SetupHandlers(mux)
-	writer := httptest.NewRecorder()
-	request, _ := http.NewRequest("GET", "/healthcheck", nil)
-	mux.ServeHTTP(writer, request)
-	if writer.Code != http.StatusOK {
-		t.Errorf("Response code is %v", writer.Code)
-	}
-	body := writer.Body.Bytes()
-	if string(body) != "ok" {
-		t.Errorf("Response body not ok")
-	}
-}
-
-func TestBadVerbHealthCheck(t *testing.T) {
-	mux := http.NewServeMux()
-	SetupHandlers(mux)
-	{
-		writer := httptest.NewRecorder()
-		request, _ := http.NewRequest("POST", "/healthcheck", nil)
-		mux.ServeHTTP(writer, request)
-		if writer.Code != http.StatusMethodNotAllowed {
-			t.Errorf("Response code is %v", writer.Code)
-		}
-	}
-	{
-		writer := httptest.NewRecorder()
-		request, _ := http.NewRequest("PUT", "/healthcheck", nil)
-		mux.ServeHTTP(writer, request)
-		if writer.Code != http.StatusMethodNotAllowed {
-			t.Errorf("Response code is %v", writer.Code)
-		}
-	}
-	{
-		writer := httptest.NewRecorder()
-		request, _ := http.NewRequest("DELETE", "/healthcheck", nil)
-		mux.ServeHTTP(writer, request)
-		if writer.Code != http.StatusMethodNotAllowed {
-			t.Errorf("Response code is %v", writer.Code)
-		}
+	for _, tt := range verbtests {
+		t.Run(tt.verb, func(t *testing.T) {
+			writer := httptest.NewRecorder()
+			request, _ := http.NewRequest(tt.verb, "/healthcheck", bytes.NewReader(nil))
+			mux.ServeHTTP(writer, request)
+			if writer.Code != tt.code {
+				t.Errorf("Response code is %v, expecting %v",
+					writer.Code, http.StatusBadRequest)
+			}
+			body, _ := io.ReadAll(writer.Body)
+			if strings.TrimRight(string(body), "\n") != tt.body {
+				t.Errorf("Response body not ok '%s'", string(body))
+			}
+		})
 	}
 }
