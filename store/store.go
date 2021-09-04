@@ -145,24 +145,26 @@ func (j *fileStore) Read(id string) (plainText string, err error) {
 
 	err = j.ReadFromFile()
 	if err != nil {
+		log.Fatal(err)
 		return
 	}
 
-	plainText = j.Store[id]
-	bytes, err := base64.StdEncoding.DecodeString(plainText)
-	if err != nil {
-		log.Fatal(err)
+	if plainText, ok := j.Store[id]; ok {
+		bytes, err := base64.StdEncoding.DecodeString(plainText)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		delete(j.Store, id)
+		j.WriteToFile()
+
+		bytes, err = decrypt(bytes)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		plainText = string(bytes)
 	}
-
-	delete(j.Store, id)
-	j.WriteToFile()
-
-	bytes, err = decrypt(bytes)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	plainText = string(bytes)
 
 	return
 }
