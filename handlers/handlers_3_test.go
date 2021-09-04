@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 
@@ -16,20 +18,13 @@ func TestGetSecretSuccessPersistence(t *testing.T) {
 	expectedSecret := "My super secret1234151"
 	mux := http.NewServeMux()
 	SetupHandlers(mux)
-	store.Init("./testdata/data.json")
-
-	{
-		data := map[string]string{id: expectedSecret}
-		jsonData, err := json.Marshal(data)
-		if err != nil {
-			t.Errorf("failed creating test data %e", err)
-		}
-
-		err = ioutil.WriteFile("./testdata/data.json", jsonData, 0644)
-		if err != nil {
-			t.Errorf("failed creating test data %e", err)
-		}
+	store.Init("./testdata/data.json", "one", "two")
+	testData := []byte(`{"7a819afa983d454b3a368c1422ba853c":"DzwOZje1bn5O8AG8YPGIPJHTMHR/nfum1HKWtOtobk+i2FLHVDmVTzw8/7AdVydMw5w="}`)
+	err := ioutil.WriteFile("./testdata/data.json", testData, 0644)
+	if err != nil {
+		t.Fatalf("failed creating test data: %e", err)
 	}
+
 	{
 		writer := httptest.NewRecorder()
 		request, _ := http.NewRequest("GET", "/"+id, nil)
@@ -45,6 +40,7 @@ func TestGetSecretSuccessPersistence(t *testing.T) {
 				expectedSecret, response.Data)
 		}
 	}
+
 	{
 		writer := httptest.NewRecorder()
 		request, _ := http.NewRequest("GET", "/"+id, nil)
@@ -58,6 +54,7 @@ func TestGetSecretSuccessPersistence(t *testing.T) {
 				expectedSecret, `{"data":""}`)
 		}
 	}
+
 	{
 		err := os.Remove("./testdata/data.json")
 		if err != nil {
