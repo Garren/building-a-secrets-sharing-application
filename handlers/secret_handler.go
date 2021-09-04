@@ -22,9 +22,12 @@ func getSecret(w http.ResponseWriter, r *http.Request) {
 	}
 	resp := types.GetSecretResponse{}
 	v, err := store.FileStoreConfig.Fs.Read(id)
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if len(v) == 0 {
+		http.Error(w, `{"data":""}`, http.StatusNotFound)
 		return
 	}
 

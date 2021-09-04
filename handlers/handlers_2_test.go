@@ -15,7 +15,7 @@ var myTestSecret = "My Test Secret"
 
 func TestGetSecretSuccess(t *testing.T) {
 	var id string
-	store.Init("/tmp/test.json")
+	store.Init("/tmp/test.json", "password", "one")
 	mux := http.NewServeMux()
 	SetupHandlers(mux)
 

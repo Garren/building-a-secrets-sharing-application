@@ -139,20 +139,19 @@ func (j *fileStore) Write(data types.SecretData) (err error) {
 	return j.WriteToFile()
 }
 
-func (j *fileStore) Read(id string) (plainText string, err error) {
+func (j *fileStore) Read(id string) (string, error) {
 	j.mutex.Lock()
 	defer j.mutex.Unlock()
 
-	err = j.ReadFromFile()
+	err := j.ReadFromFile()
 	if err != nil {
-		log.Fatal(err)
-		return
+		return "", err
 	}
 
 	if plainText, ok := j.Store[id]; ok {
 		bytes, err := base64.StdEncoding.DecodeString(plainText)
 		if err != nil {
-			log.Fatal(err)
+			return "", err
 		}
 
 		delete(j.Store, id)
@@ -160,11 +159,12 @@ func (j *fileStore) Read(id string) (plainText string, err error) {
 
 		bytes, err = decrypt(bytes)
 		if err != nil {
-			log.Fatal(err)
+			return "", err
 		}
 
 		plainText = string(bytes)
+		return plainText, nil
 	}
 
-	return
+	return "", err
 }
