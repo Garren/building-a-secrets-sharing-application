@@ -13,6 +13,6 @@ type CreateSecretResponse struct {
 }
 
 type SecretData struct {
-	Id string
+	Id     string
 	Secret string
 }
