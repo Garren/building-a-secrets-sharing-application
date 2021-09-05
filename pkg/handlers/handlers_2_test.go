@@ -7,8 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Garren/building-a-secrets-sharing-application/store"
-	"github.com/Garren/building-a-secrets-sharing-application/types"
+	"github.com/Garren/building-a-secrets-sharing-application/pkg/store"
+	"github.com/Garren/building-a-secrets-sharing-application/pkg/types"
 )
 
 var myTestSecret = "My Test Secret"

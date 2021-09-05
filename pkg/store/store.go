@@ -12,7 +12,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/Garren/building-a-secrets-sharing-application/types"
+	"github.com/Garren/building-a-secrets-sharing-application/pkg/types"
 	"golang.org/x/crypto/scrypt"
 )
 

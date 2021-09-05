@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/Garren/building-a-secrets-sharing-application/handlers"
-	"github.com/Garren/building-a-secrets-sharing-application/store"
+	"github.com/Garren/building-a-secrets-sharing-application/pkg/handlers"
+	"github.com/Garren/building-a-secrets-sharing-application/pkg/store"
 )
 
 func main() {

@@ -9,8 +9,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/Garren/building-a-secrets-sharing-application/store"
-	"github.com/Garren/building-a-secrets-sharing-application/types"
+	"github.com/Garren/building-a-secrets-sharing-application/pkg/store"
+	"github.com/Garren/building-a-secrets-sharing-application/pkg/types"
 )
 
 func getSecret(w http.ResponseWriter, r *http.Request) {
