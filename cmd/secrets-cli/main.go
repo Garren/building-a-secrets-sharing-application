@@ -108,7 +108,15 @@ func main() {
 	c.PlainText = flag.String("text", "", "secret text (create)")
 	c.SecretId = flag.String("id", "", "secret id (get)")
 
+	showHelp := flag.Bool("h", false, "show help")
+
 	flag.Parse()
+
+	if *showHelp {
+		fmt.Println("Usage: ...")
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
 
 	if err := validate(c); err != nil {
 		log.Fatalf("flag error: %e", err)
@@ -130,8 +138,7 @@ func main() {
 			fmt.Print(resp.Id)
 		}
 	default:
-		fmt.Println("Usage: ...")
-		flag.PrintDefaults()
+		fmt.Printf("unknown action '%s'", *c.Action)
 		os.Exit(1)
 	}
 }
